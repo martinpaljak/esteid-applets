@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="fake" name="Build esteid-applets">
+  <!-- ant-javacard task from javacard.pro -->
+  <taskdef name="javacard" classname="pro.javacard.ant.JavaCard" classpath="ext/ant-javacard.jar"/>
+
+  <!-- FakeEstEID applet -->
+  <target name="fake">
+    <javacard>
+      <!-- FakeEstEID -->
+      <cap output="FakeEstEID.cap" sources="src" classes="tmp">
+        <applet class="org.esteid.applet.FakeEstEID" aid="D23300000045737445494420763335"/>
+        <import exps="ext/visa_openplatform-2_0" jar="ext/visa_openplatform-2_0/visaop20.jar"/>
+      </cap>
+    </javacard>
+    <!-- For testing with emulators -->
+    <jar destfile="FakeEstEID.jar" basedir="tmp"/>
+  </target>
+</project>
