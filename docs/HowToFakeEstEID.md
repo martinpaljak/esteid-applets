@@ -1,10 +1,11 @@
-Target: a) create a minimal, functional smart card that looks identical (in the sense of being identified by OpenSC and qesteidutil) to an Estonian ID-card b) make it do crypto with arbitrary keys and certificates!
+# How to imitate EstEID
+Objectives:
+ * create a minimal, functional smart card that looks identical (in the sense of being identified by OpenSC and qesteidutil) to an Estonian ID-card
+ * make it do crypto with arbitrary keys and certificates!
 
 # What you need to know and read beforehand
-* http://www.id.ee/public/EstEID_Spetsifikatsioon_v2.01.pdf
-* http://www.id.ee/public/EstEID_kaardi_kasutusjuhend.pdf
-* https://www.opensc-project.org/opensc/attachment/wiki/MICARDO/mic21_druck.pdf
-* ISO7816-* (mostly 4). http://www.cardwerk.com/smartcards/smartcard_standard_ISO7816-4.aspx
+* Documentation available in [pdfs](./pdfs)
+* ISO7816-* (mostly 4). Available from ISO or older version from the internet: http://www.cardwerk.com/smartcards/smartcard_standard_ISO7816-4.aspx
 
 # Tools used
 * One 1st generation Micardo EstEID card belonging to some nice real person and my own ID-card from 2011 for reference.
@@ -15,7 +16,7 @@ Target: a) create a minimal, functional smart card that looks identical (in the 
 * Time and witchcraft
 
 # What is (on) the card?
-Do:
+Drap APDU logs from applications:
 * ```sudo touch /tmp/smartcardpp.log```
 * and  ```sudo chmod 777 /tmp/smartcardpp.log```
 * and run ```qesteidutil```.
