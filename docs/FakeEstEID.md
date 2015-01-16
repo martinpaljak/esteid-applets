@@ -1,4 +1,4 @@
-* See https://github.com/martinpaljak/AppletPlayground/wiki/HowToFakeEstEID for implementation notes.
+* See [HowToFakeEstEID.md](./HowToFakeEstEID.md) for implementation notes.
 
 ## What it is ?
  * *Looks like a real EstEID card to the extent possible** so that it makes existing software (OpenSC, [Baastarkvara](https://github.com/martinpaljak/idkaart_public)) use/see the keys and personal data file
