@@ -302,6 +302,7 @@ public final class FakeEstEID extends Applet {
 					break;
 				}
 			} else if (p1 == 0x04) {
+				len = apdu.setIncomingAndReceive();
 				if (!JCSystem.getAID().partialEquals(buffer, ISO7816.OFFSET_CDATA, (byte) len)) {
 					Pro.throwIt(ISO7816.SW_FILE_NOT_FOUND);
 				}
