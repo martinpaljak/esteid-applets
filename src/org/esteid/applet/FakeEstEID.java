@@ -410,7 +410,7 @@ public final class FakeEstEID extends Applet {
 				}
 			} else {
 				// FIXME: this approach requires transactions
-				Util.arrayCopyNonAtomic(buffer, ISO7816.OFFSET_LC, src, (short) 1, (short) len);
+				Util.arrayCopyNonAtomic(buffer, ISO7816.OFFSET_LC, src, (short) 1, len);
 				src[0] = (byte) len;
 			}
 			Pro.throwIt(ISO7816.SW_NO_ERROR);
@@ -563,7 +563,7 @@ public final class FakeEstEID extends Applet {
 				Pro.send_array(src, (short) 0, (short) (src[0]+1));
 			} else { //set
 				len = apdu.setIncomingAndReceive();
-				Util.arrayCopyNonAtomic(buffer, ISO7816.OFFSET_LC, src, (short) 0, (short) len);
+				Util.arrayCopyNonAtomic(buffer, ISO7816.OFFSET_LC, src, (short) 0, len);
 				src[0] = (byte) len;
 			}
 			break;
