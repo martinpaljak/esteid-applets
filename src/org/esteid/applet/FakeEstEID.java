@@ -473,6 +473,7 @@ public final class FakeEstEID extends Applet {
 		short len = 0;
 		short offset = 0;
 		byte [] src = null;
+		byte i = 0;
 		RSAPrivateCrtKey privkey = null;
 
 		// set/get the values
@@ -531,11 +532,19 @@ public final class FakeEstEID extends Applet {
 			break;
 		case 0x04: // personal data file
 			src = pd.rec2field(buffer[ISO7816.OFFSET_P1]);
+			if (buffer[ISO7816.OFFSET_P2] == 0x01) { // wipe
+				for (i = 1; i <= 16; i++) {
+					src = pd.rec2field(i);
+					// FIXME: padding with space is a violation in new apps
+					Util.arrayFillNonAtomic(src, (short)0, (short)src.length, (byte) ' ');
+				}
+				break;
+			}
 			if (buffer[ISO7816.OFFSET_LC] == 0x00) { // get
 				Pro.send_array(src);
 			} else  { // set
 				len = apdu.setIncomingAndReceive();
-				// FIXME: padding with space is a vilation in new apps
+				// FIXME: padding with space is a violation in new apps
 				Util.arrayFillNonAtomic(src, (short)0, (short)src.length, (byte) ' ');
 				Util.arrayCopyNonAtomic(buffer, ISO7816.OFFSET_CDATA, src, (short) 0, len);
 			}
