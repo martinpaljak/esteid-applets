@@ -5,9 +5,9 @@
 
   <!-- FakeEstEID applet -->
   <target name="fake">
-    <javacard>
+    <javacard jckit="../jc222_kit">
       <!-- FakeEstEID -->
-      <cap output="FakeEstEID.cap" sources="src" classes="tmp">
+      <cap output="FakeEstEID.cap" sources="src">
         <applet class="org.esteid.applet.FakeEstEID" aid="D23300000045737445494420763335"/>
         <import exps="ext/visa_openplatform-2_0" jar="ext/visa_openplatform-2_0/visaop20.jar"/>
       </cap>

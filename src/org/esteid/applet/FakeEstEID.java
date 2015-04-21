@@ -29,7 +29,6 @@ import javacard.framework.Util;
 import javacard.security.KeyBuilder;
 import javacard.security.RSAPrivateCrtKey;
 import javacardx.crypto.Cipher;
-import visa.openplatform.OPSystem;
 
 // See https://github.com/martinpaljak/AppletPlayground/wiki/FakeEstEIDApplet
 public final class FakeEstEID extends Applet {
@@ -404,15 +403,15 @@ public final class FakeEstEID extends Applet {
 			}
 			len = apdu.setIncomingAndReceive();
 			// Check for same length :)
-			if (src[0] > 0) {
-				if (src[0] != len) {
-					Pro.throwIt((short) 0x63C2);
-				}
-			} else {
-				// FIXME: this approach requires transactions
-				Util.arrayCopyNonAtomic(buffer, ISO7816.OFFSET_LC, src, (short) 1, len);
-				src[0] = (byte) len;
-			}
+//			if (src[0] > 0) {
+//				if (src[0] != len) {
+//					Pro.throwIt((short) 0x63C2);
+//				}
+//			} else {
+//				// FIXME: this approach requires transactions
+//				Util.arrayCopyNonAtomic(buffer, ISO7816.OFFSET_LC, src, (short) 1, len);
+//				src[0] = (byte) len;
+//			}
 			Pro.throwIt(ISO7816.SW_NO_ERROR);
 			break;
 		case ISO7816.INS_CHANGE_REFERENCE_DATA:
@@ -480,7 +479,7 @@ public final class FakeEstEID extends Applet {
 		// set/get the values
 		switch (buffer[ISO7816.OFFSET_INS]) {
 		case 0x01: // Set historical bytes
-			OPSystem.setATRHistBytes(histbytes, (short) 0, (byte) histbytes.length);
+			//GPSystem.setATRHistBytes(histbytes, (short) 0, (byte) histbytes.length); //FIXME
 			break;
 		case 0x02: // Store certificate
 			len = apdu.setIncomingAndReceive();
