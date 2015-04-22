@@ -27,12 +27,16 @@ import javacard.framework.ISOException;
 import javacard.framework.JCSystem;
 import javacard.framework.Util;
 import javacard.security.KeyBuilder;
+import javacard.security.KeyPair;
 import javacard.security.RSAPrivateCrtKey;
+import javacard.security.RSAPublicKey;
 import javacardx.crypto.Cipher;
 
 // See https://github.com/martinpaljak/AppletPlayground/wiki/FakeEstEIDApplet
 public final class FakeEstEID extends Applet {
 	// Interesting Data (tm)
+	private KeyPair akp;
+	private KeyPair skp;
 	private RSAPrivateCrtKey auth;
 	private RSAPrivateCrtKey sign;
 	private  Cipher rsa;
@@ -217,10 +221,15 @@ public final class FakeEstEID extends Applet {
 
 	private byte [] ram = null; 
 	private FakeEstEID() {
-		auth = (RSAPrivateCrtKey) KeyBuilder.buildKey(KeyBuilder.TYPE_RSA_CRT_PRIVATE, KeyBuilder.LENGTH_RSA_2048, false);
-		sign = (RSAPrivateCrtKey) KeyBuilder.buildKey(KeyBuilder.TYPE_RSA_CRT_PRIVATE, KeyBuilder.LENGTH_RSA_2048, false);
-		auth.clearKey();
-		sign.clearKey();
+		akp = new KeyPair(KeyPair.ALG_RSA_CRT, KeyBuilder.LENGTH_RSA_2048);
+		skp = new KeyPair(KeyPair.ALG_RSA_CRT, KeyBuilder.LENGTH_RSA_2048);
+		akp.getPrivate().clearKey();
+		skp.getPrivate().clearKey();
+		akp.getPublic().clearKey();
+		skp.getPublic().clearKey();
+		
+		auth = (RSAPrivateCrtKey) akp.getPrivate();
+		sign = (RSAPrivateCrtKey) skp.getPrivate();
 
 		authcert = new byte[0x600];
 		Util.arrayFillNonAtomic(authcert, (short) 0, (short) authcert.length, (byte) 0x00);
@@ -474,7 +483,7 @@ public final class FakeEstEID extends Applet {
 		short offset = 0;
 		byte [] src = null;
 		byte i = 0;
-		RSAPrivateCrtKey privkey = null;
+		KeyPair kp = null;
 
 		// set/get the values
 		switch (buffer[ISO7816.OFFSET_INS]) {
@@ -494,21 +503,31 @@ public final class FakeEstEID extends Applet {
 		case 0x03: // key material
 			// Key material select
 			if (p1 == 0x01) {
-				privkey = auth;
+				kp = akp;
 			} else if (p1 == 0x02) { // set
-				privkey = sign;
+				kp = skp;
 			}
+			// Generation
+			if (p2 == 0x08) {
+				kp.genKeyPair();
+				break;
+			}
+			// Components
 			if (buffer[ISO7816.OFFSET_LC] == 0x00) { // get
 				if (p2 == 0x01) {
-					len = privkey.getP(buffer, (short)0);
+					len = ((RSAPrivateCrtKey)kp.getPrivate()).getP(buffer, (short)0);
 				} else if (p2 == 0x02) {
-					len = privkey.getQ(buffer, (short)0);
+					len = ((RSAPrivateCrtKey)kp.getPrivate()).getQ(buffer, (short)0);
 				} else if (p2 == 0x03) {
-					len = privkey.getDP1(buffer, (short)0);
+					len = ((RSAPrivateCrtKey)kp.getPrivate()).getDP1(buffer, (short)0);
 				} else if (p2 == 0x04) {
-					len = privkey.getDQ1(buffer, (short)0);
+					len = ((RSAPrivateCrtKey)kp.getPrivate()).getDQ1(buffer, (short)0);
 				} else if (p2 == 0x05) {
-					len = privkey.getPQ(buffer, (short)0);
+					len = ((RSAPrivateCrtKey)kp.getPrivate()).getPQ(buffer, (short)0);
+				} else if (p2 == 0x06) {
+					len = ((RSAPublicKey)kp.getPublic()).getModulus(buffer, (short)0);
+				} else if (p2 == 0x07) {
+					len = ((RSAPublicKey)kp.getPublic()).getExponent(buffer, (short)0);
 				} else {
 					ISOException.throwIt(ISO7816.SW_INCORRECT_P1P2);
 				}
@@ -516,15 +535,19 @@ public final class FakeEstEID extends Applet {
 			} else { // set
 				len = apdu.setIncomingAndReceive();
 				if (p2 == 0x01) {
-					privkey.setP(buffer, ISO7816.OFFSET_CDATA, len);
+					((RSAPrivateCrtKey)kp.getPrivate()).setP(buffer, ISO7816.OFFSET_CDATA, len);
 				} else if (p2 == 0x02) {
-					privkey.setQ(buffer, ISO7816.OFFSET_CDATA, len);
+					((RSAPrivateCrtKey)kp.getPrivate()).setQ(buffer, ISO7816.OFFSET_CDATA, len);
 				} else if (p2 == 0x03) {
-					privkey.setDP1(buffer, ISO7816.OFFSET_CDATA, len);
+					((RSAPrivateCrtKey)kp.getPrivate()).setDP1(buffer, ISO7816.OFFSET_CDATA, len);
 				} else if (p2 == 0x04) {
-					privkey.setDQ1(buffer, ISO7816.OFFSET_CDATA, len);
+					((RSAPrivateCrtKey)kp.getPrivate()).setDQ1(buffer, ISO7816.OFFSET_CDATA, len);
 				} else if (p2 == 0x05) {
-					privkey.setPQ(buffer, ISO7816.OFFSET_CDATA, len);
+					((RSAPrivateCrtKey)kp.getPrivate()).setPQ(buffer, ISO7816.OFFSET_CDATA, len);
+				} else if (p2 == 0x06) {
+					((RSAPublicKey)kp.getPublic()).setModulus(buffer, ISO7816.OFFSET_CDATA, len);
+				} else if (p2 == 0x07) {
+					((RSAPublicKey)kp.getPublic()).setExponent(buffer, ISO7816.OFFSET_CDATA, len);
 				} else {
 					ISOException.throwIt(ISO7816.SW_INCORRECT_P1P2);
 				}
