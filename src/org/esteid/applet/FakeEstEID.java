@@ -29,17 +29,16 @@ import javacard.framework.Util;
 import javacard.security.KeyBuilder;
 import javacard.security.KeyPair;
 import javacard.security.RSAPrivateCrtKey;
+import javacard.security.RSAPrivateKey;
 import javacard.security.RSAPublicKey;
 import javacardx.crypto.Cipher;
 
 // See https://github.com/martinpaljak/AppletPlayground/wiki/FakeEstEIDApplet
 public final class FakeEstEID extends Applet {
 	// Interesting Data (tm)
-	private KeyPair akp;
-	private KeyPair skp;
-	private RSAPrivateCrtKey auth;
-	private RSAPrivateCrtKey sign;
-	private  Cipher rsa;
+	private KeyPair auth;
+	private KeyPair sign;
+	private Cipher rsa;
 	private byte[] authcert;
 	private byte[] signcert;
 	private PersonalDataFile pd;
@@ -60,7 +59,6 @@ public final class FakeEstEID extends Applet {
 	private final  short FID_AACE = (short) 0xAACE;
 	private final  short FID_DDCE = (short) 0xDDCE;
 	private final  short FID_0033 = (short) 0x0033;
-
 
 	// FCI bytes;
 	public  final byte[] fci_mf = new byte[] { (byte) 0x6F, (byte) 0x26,
@@ -218,19 +216,19 @@ public final class FakeEstEID extends Applet {
 
 	private short[] runtime_fields;
 	private short selectedfile = 0;
-
 	private byte [] ram = null; 
+	
 	private FakeEstEID() {
-		akp = new KeyPair(KeyPair.ALG_RSA_CRT, KeyBuilder.LENGTH_RSA_2048);
-		skp = new KeyPair(KeyPair.ALG_RSA_CRT, KeyBuilder.LENGTH_RSA_2048);
-		akp.getPrivate().clearKey();
-		skp.getPrivate().clearKey();
-		akp.getPublic().clearKey();
-		skp.getPublic().clearKey();
-		
-		auth = (RSAPrivateCrtKey) akp.getPrivate();
-		sign = (RSAPrivateCrtKey) skp.getPrivate();
+		// Use ALG_RSA instead of ALG_RSA_CRT because of K1
+		auth = new KeyPair(KeyPair.ALG_RSA, KeyBuilder.LENGTH_RSA_2048);
+		sign = new KeyPair(KeyPair.ALG_RSA, KeyBuilder.LENGTH_RSA_2048);
+		// Not necessary, but be paranoid
+		auth.getPrivate().clearKey();
+		sign.getPrivate().clearKey();
+		auth.getPublic().clearKey();
+		sign.getPublic().clearKey();
 
+		// Certificates
 		authcert = new byte[0x600];
 		Util.arrayFillNonAtomic(authcert, (short) 0, (short) authcert.length, (byte) 0x00);
 		signcert = new byte[0x600];
@@ -243,6 +241,7 @@ public final class FakeEstEID extends Applet {
 			Util.arrayFillNonAtomic(src, (short) 0, (short) src.length, (byte) 'A');
 		}
 
+		// Operational fields
 		runtime_fields = JCSystem.makeTransientShortArray((short) 1, JCSystem.CLEAR_ON_RESET);
 		rsa = Cipher.getInstance(Cipher.ALG_RSA_PKCS1, false);
 		ram = JCSystem.makeTransientByteArray((short) 384, JCSystem.CLEAR_ON_RESET);
@@ -401,26 +400,7 @@ public final class FakeEstEID extends Applet {
 			// Above is enough to show a "valid card" in qesteidutil/pkcs15-tool
 		case ISO7816.INS_VERIFY:
 			// We don't use PIN codes, so anything goes
-			// But store it ... just in case
-			byte [] src = null;
-			if (p2 == 0x00) { // puk
-				src = puk;
-			} else if (p2 == 0x01) {
-				src = pin1;
-			} else if (p2 == 0x02) {
-				src = pin2;
-			}
 			len = apdu.setIncomingAndReceive();
-			// Check for same length :)
-//			if (src[0] > 0) {
-//				if (src[0] != len) {
-//					Pro.throwIt((short) 0x63C2);
-//				}
-//			} else {
-//				// FIXME: this approach requires transactions
-//				Util.arrayCopyNonAtomic(buffer, ISO7816.OFFSET_LC, src, (short) 1, len);
-//				src[0] = (byte) len;
-//			}
 			Pro.throwIt(ISO7816.SW_NO_ERROR);
 			break;
 		case ISO7816.INS_CHANGE_REFERENCE_DATA:
@@ -439,7 +419,7 @@ public final class FakeEstEID extends Applet {
 		case ISO7816.INS_INTERNAL_AUTHENTICATE:
 			// We sign the incoming data with authentication key
 			len = apdu.setIncomingAndReceive();
-			rsa.init(auth, Cipher.MODE_ENCRYPT);
+			rsa.init(auth.getPrivate(), Cipher.MODE_ENCRYPT);
 			len2 = rsa.doFinal(buffer, ISO7816.OFFSET_CDATA, len, ram, (short) 0);
 			Pro.send_array(ram, (short)0, len2);
 			break;
@@ -448,7 +428,7 @@ public final class FakeEstEID extends Applet {
 			// Sign and decrypt
 			short op = Util.makeShort(p1, p2);
 			if (op == (short)0x9E9A) { // sign
-				rsa.init(sign, Cipher.MODE_ENCRYPT);
+				rsa.init(sign.getPrivate(), Cipher.MODE_ENCRYPT);
 				len2 = rsa.doFinal(buffer, ISO7816.OFFSET_CDATA, len, ram, (short) 0);
 				Pro.send_array(ram, (short)0, len2);
 			} else if (op == (short)0x8086) { //decrypt
@@ -463,12 +443,13 @@ public final class FakeEstEID extends Applet {
 					// Shift back by two
 					len = Util.arrayCopyNonAtomic(ram, (short)2, ram, (short)0, (short) (len2-2));
 					// Decrypt directly into APDU buffer
-					rsa.init(auth, Cipher.MODE_DECRYPT);
+					rsa.init(auth.getPrivate(), Cipher.MODE_DECRYPT);
 					len2 = rsa.doFinal(ram, (short) 0, len, buffer, (short) 0);
 					Pro.send((short)0, len2);
 				}
-			} else
+			} else {
 				Pro.throwIt(ISO7816.SW_INCORRECT_P1P2);
+			}
 			break;
 		default:
 			Pro.throwIt(ISO7816.SW_INS_NOT_SUPPORTED);
@@ -503,9 +484,9 @@ public final class FakeEstEID extends Applet {
 		case 0x03: // key material
 			// Key material select
 			if (p1 == 0x01) {
-				kp = akp;
+				kp = auth;
 			} else if (p1 == 0x02) { // set
-				kp = skp;
+				kp = sign;
 			}
 			// Generation
 			if (p2 == 0x08) {
@@ -528,6 +509,10 @@ public final class FakeEstEID extends Applet {
 					len = ((RSAPublicKey)kp.getPublic()).getModulus(buffer, (short)0);
 				} else if (p2 == 0x07) {
 					len = ((RSAPublicKey)kp.getPublic()).getExponent(buffer, (short)0);
+				} else if (p2 == 0x09) {
+					len = ((RSAPrivateKey)kp.getPrivate()).getModulus(buffer, (short)0);
+				} else if (p2 == 0x0A) {
+					len = ((RSAPrivateKey)kp.getPrivate()).getExponent(buffer, (short)0);
 				} else {
 					ISOException.throwIt(ISO7816.SW_INCORRECT_P1P2);
 				}
@@ -548,6 +533,10 @@ public final class FakeEstEID extends Applet {
 					((RSAPublicKey)kp.getPublic()).setModulus(buffer, ISO7816.OFFSET_CDATA, len);
 				} else if (p2 == 0x07) {
 					((RSAPublicKey)kp.getPublic()).setExponent(buffer, ISO7816.OFFSET_CDATA, len);
+				} else if (p2 == 0x09) {
+					((RSAPrivateKey)kp.getPrivate()).setModulus(buffer, apdu.getOffsetCdata(), len);
+				} else if (p2 == 0x0A) {
+					((RSAPrivateKey)kp.getPrivate()).setExponent(buffer, apdu.getOffsetCdata(), len);
 				} else {
 					ISOException.throwIt(ISO7816.SW_INCORRECT_P1P2);
 				}
