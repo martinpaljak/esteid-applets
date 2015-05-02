@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project basedir="." default="fake" name="Build esteid-applets">
   <!-- ant-javacard task from javacard.pro -->
-  <taskdef name="javacard" classname="pro.javacard.ant.JavaCard" classpath="ext/ant-javacard.jar"/>
+  <target name="ant-javacard">
+    <ant dir="ext/ant-javacard"/>
+    <taskdef name="javacard" classname="pro.javacard.ant.JavaCard" classpath="ext/ant-javacard/ant-javacard.jar"/>
+  </target>
 
   <!-- FakeEstEID applet -->
-  <target name="fake">
+  <target name="fake" depends="ant-javacard">
     <javacard jckit="../jc222_kit">
       <!-- FakeEstEID -->
       <cap output="FakeEstEID.cap" sources="src">
