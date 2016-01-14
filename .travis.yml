@@ -2,8 +2,6 @@ sudo: false
 language: java
 jdk:
 - oraclejdk8
-before_install:
-- git submodule update --init --recursive
 script: ant
 deploy:
   provider: releases
