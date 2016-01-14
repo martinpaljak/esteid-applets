@@ -1,3 +1,6 @@
 [submodule "ext/ant-javacard"]
 	path = ext/ant-javacard
 	url = https://github.com/martinpaljak/ant-javacard
+[submodule "sdks"]
+	path = ext/sdks
+	url = git@github.com:martinpaljak/oracle_javacard_sdks.git
