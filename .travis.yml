@@ -1,0 +1,17 @@
+sudo: false
+language: java
+jdk:
+- oraclejdk8
+before_install:
+- git submodule update --init --recursive
+script: ant
+deploy:
+  provider: releases
+  file:
+  - FakeEstEID.cap
+  - FakeEstEID.jar
+  api-key:
+    secure: EjRpPEirLdhfBm5k4FoXuIBaev0ipDajDn0yB4fceS+LNZP62Xduji/a6hsr3OiiDfK4X+56Hl0T5/YmDKj2APNKc+Aze2yuKfEuCINvUTf1y4qAveBSV300JOhyWfTlTDcRN5DyUOr8mHA21tuzl2VHendDs64uUGhsxVAa5V4=
+  skip_cleanup: true
+  on:
+    tags: true

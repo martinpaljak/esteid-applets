@@ -8,7 +8,7 @@
 
   <!-- FakeEstEID applet -->
   <target name="fake" depends="ant-javacard">
-    <javacard jckit="../jc222_kit">
+    <javacard jckit="ext/sdks/jc222_kit">
       <!-- FakeEstEID -->
       <cap output="FakeEstEID.cap" sources="src">
         <applet class="org.esteid.applet.FakeEstEID" aid="D23300000045737445494420763335"/>
