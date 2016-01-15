@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014 Martin Paljak
+ * Copyright (c) 2014-2016 Martin Paljak
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -206,7 +206,7 @@ public final class FakeEstEID extends Applet {
 
 
 	// Historical bytes
-	public  final byte[] histbytes = new byte[] {(byte) 0x45, (byte) 0x73, (byte) 0x74, (byte) 0x45, (byte) 0x49, (byte) 0x44, (byte) 0x20, (byte) 0x76, (byte) 0x65, (byte) 0x72, (byte) 0x20, (byte) 0x31, (byte) 0x2E, (byte) 0x30};
+	public static final byte[] histbytes = new byte[] {(byte) 0x45, (byte) 0x73, (byte) 0x74, (byte) 0x45, (byte) 0x49, (byte) 0x44, (byte) 0x20, (byte) 0x76, (byte) 0x65, (byte) 0x72, (byte) 0x20, (byte) 0x31, (byte) 0x2E, (byte) 0x30};
 	// AID
 	public  final byte[] aid = new byte[] {(byte)0xD2, (byte)0x33, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x45, (byte)0x73, (byte)0x74, (byte)0x45, (byte)0x49, (byte)0x44, (byte)0x20, (byte)0x76, (byte)0x33, (byte)0x35};
 
