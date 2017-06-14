@@ -8,8 +8,10 @@ Various JavaCard applets compatible<sup>*</sup> to EstEID chip protocol:
 
 Use:
 
+```
 git clone --recursive https://github.com/martinpaljak/esteid-applets
 make -C esteid-applets
+```
 
 ## Similar and related projects
 * https://code.google.com/p/eid-quick-key-toolset/
