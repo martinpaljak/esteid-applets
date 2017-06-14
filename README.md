@@ -10,7 +10,8 @@ Use:
 
 ```
 git clone --recursive https://github.com/martinpaljak/esteid-applets
-make -C esteid-applets
+cd esteid-applets
+ant
 ```
 
 ## Similar and related projects
